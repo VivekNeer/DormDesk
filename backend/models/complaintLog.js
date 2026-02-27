@@ -20,4 +20,23 @@ async function getLogs(complaintId) {
   return rows;
 }
 
-module.exports = { addLog, getLogs };
+/**
+ * Deletes the most recent log entry for a complaint.
+ * Used when reverting a stage — erases the forward transition as if it never happened.
+ */
+async function deleteLatestLog(complaintId) {
+  await db.query(
+    `DELETE FROM complaint_logs
+     WHERE id = (
+       SELECT id FROM (
+         SELECT id FROM complaint_logs
+         WHERE complaint_id = ?
+         ORDER BY changed_at DESC
+         LIMIT 1
+       ) AS latest
+     )`,
+    [complaintId]
+  );
+}
+
+module.exports = { addLog, getLogs, deleteLatestLog };

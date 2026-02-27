@@ -9,18 +9,19 @@ async function findBySub(sub) {
 }
 
 /**
- * Creates user if not exists, updates name/email if they changed.
+ * Creates user if not exists, updates name/email/role/admin_category if they changed.
  * Called on every login via POST /api/users/sync
  */
-async function upsertUser({ sub, name, email, role }) {
+async function upsertUser({ sub, name, email, role, adminCategory }) {
   await db.query(
-    `INSERT INTO users (cognito_sub, name, email, role)
-     VALUES (?, ?, ?, ?)
+    `INSERT INTO users (cognito_sub, name, email, role, admin_category)
+     VALUES (?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
-       name  = VALUES(name),
-       email = VALUES(email),
-       role  = VALUES(role)`,
-    [sub, name, email, role]
+       name           = VALUES(name),
+       email          = VALUES(email),
+       role           = VALUES(role),
+       admin_category = VALUES(admin_category)`,
+    [sub, name, email, role, adminCategory || null]
   );
   return findBySub(sub);
 }

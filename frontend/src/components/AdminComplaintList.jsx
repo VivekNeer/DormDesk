@@ -7,7 +7,11 @@ const PRIORITIES = ['all', 'low', 'medium', 'high'];
 const STAGES = ['all', '1', '2', '3', '4'];
 const STAGE_LABELS = { all: 'All Stages', 1: 'Received', 2: 'Acknowledged', 3: 'In Progress', 4: 'Resolved' };
 
-export default function AdminComplaintList() {
+/**
+ * @param {string?} fixedCategory — locks to a single category (for category admins).
+ *                                  When set, the category filter is hidden.
+ */
+export default function AdminComplaintList({ fixedCategory }) {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,6 +31,9 @@ export default function AdminComplaintList() {
   const [advancingComplaint, setAdvancingComplaint] = useState(null);
   const [stageNote, setStageNote] = useState('');
 
+  // Stage revert confirmation state
+  const [revertingComplaint, setRevertingComplaint] = useState(null);
+
   // Audit log state
   const [viewingLogs, setViewingLogs] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -39,7 +46,8 @@ export default function AdminComplaintList() {
     setLoading(true);
     try {
       const params = {};
-      if (categoryFilter !== 'all') params.category = categoryFilter;
+      // Only apply category filter for SuperAdmin (category admins are auto-scoped by backend)
+      if (!fixedCategory && categoryFilter !== 'all') params.category = categoryFilter;
       if (priorityFilter !== 'all') params.priority = priorityFilter;
       if (stageFilter !== 'all') params.stage = stageFilter;
 
@@ -100,6 +108,21 @@ export default function AdminComplaintList() {
     }
   }
 
+  // --- Revert stage ---
+  function handleRevertClick(complaint) {
+    setRevertingComplaint(complaint);
+  }
+
+  async function handleRevertSubmit() {
+    try {
+      await api.patch(`/complaints/${revertingComplaint.id}/revert`);
+      setRevertingComplaint(null);
+      fetchComplaints();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to revert stage.');
+    }
+  }
+
   // --- View audit log ---
   async function handleViewLogs(complaint) {
     try {
@@ -116,18 +139,21 @@ export default function AdminComplaintList() {
       {/* Filter Bar */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
         <div className="flex flex-wrap gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c === 'all' ? 'All Categories' : c.charAt(0).toUpperCase() + c.slice(1)}</option>
-              ))}
-            </select>
-          </div>
+          {/* Only show category filter for SuperAdmin */}
+          {!fixedCategory && (
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500"
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c === 'all' ? 'All Categories' : c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Priority</label>
             <select
@@ -178,6 +204,7 @@ export default function AdminComplaintList() {
                 complaint={complaint}
                 showActions={true}
                 onAdvanceStage={handleAdvanceClick}
+                onRevertStage={handleRevertClick}
                 onEdit={complaint.stage <= 2 ? handleEditClick : undefined}
               />
               {/* View Logs button */}
@@ -279,6 +306,37 @@ export default function AdminComplaintList() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Stage Revert Confirmation Modal */}
+      {revertingComplaint && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-2">
+              Revert Complaint #{revertingComplaint.id}
+            </h3>
+            <p className="text-sm text-gray-500 mb-2">
+              Stage {revertingComplaint.stage} → Stage {revertingComplaint.stage - 1}
+            </p>
+            <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded-lg mb-4">
+              ⚠️ This will undo the last stage transition and remove its audit log entry.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setRevertingComplaint(null)}
+                className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRevertSubmit}
+                className="px-4 py-2 text-sm text-white bg-orange-500 rounded-lg hover:bg-orange-600 cursor-pointer"
+              >
+                Confirm Revert
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

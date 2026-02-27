@@ -19,7 +19,7 @@ async function findByStudent(studentId) {
   return rows;
 }
 
-async function findAll({ category, priority, stage } = {}) {
+async function findAll({ category, priority, stage, adminCategory } = {}) {
   let query = `
     SELECT c.*, u.name AS student_name, u.email AS student_email
     FROM complaints c
@@ -28,9 +28,13 @@ async function findAll({ category, priority, stage } = {}) {
   `;
   const params = [];
 
-  if (category) { query += ' AND c.category = ?'; params.push(category); }
+  // Category admin scoping: auto-filter to their category
+  if (adminCategory) { query += ' AND c.category = ?'; params.push(adminCategory); }
+  // Manual category filter (SuperAdmin can filter further)
+  else if (category) { query += ' AND c.category = ?'; params.push(category); }
+
   if (priority) { query += ' AND c.priority = ?'; params.push(priority); }
-  if (stage)    { query += ' AND c.stage = ?';    params.push(Number(stage)); }
+  if (stage) { query += ' AND c.stage = ?'; params.push(Number(stage)); }
 
   query += ' ORDER BY c.created_at DESC';
 

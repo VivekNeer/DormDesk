@@ -1,11 +1,9 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
-export default function ProtectedRoute({ allowedGroups, children }) {
-  // ⚠️ TEMPORARY BYPASS — remove this line to re-enable auth guard
-  // return children;
+const CATEGORY_ADMIN_GROUPS = ['FoodAdmin', 'WaterAdmin', 'RoomAdmin', 'ElectricalAdmin', 'CleaningAdmin'];
 
-  // --- Real auth guard below (uncomment by removing the `return children;` above) ---
+export default function ProtectedRoute({ allowedGroups, children }) {
   const { isAuthenticated, groups, isLoading } = useAuth();
 
   if (isLoading) {
@@ -30,6 +28,9 @@ export default function ProtectedRoute({ allowedGroups, children }) {
     // Redirect to the appropriate dashboard based on their actual group
     if (groups.includes('SuperAdmin')) {
       return <Navigate to="/admin" replace />;
+    }
+    if (groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g))) {
+      return <Navigate to="/category-admin" replace />;
     }
     if (groups.includes('Students')) {
       return <Navigate to="/student" replace />;

@@ -7,6 +7,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import CategoryAdminDashboard from './pages/CategoryAdminDashboard';
+
+const CATEGORY_ADMIN_GROUPS = ['FoodAdmin', 'WaterAdmin', 'RoomAdmin', 'ElectricalAdmin', 'CleaningAdmin'];
 
 // Smart redirect: if logged in, go to correct dashboard; otherwise go to login
 function RootRedirect() {
@@ -23,6 +26,9 @@ function RootRedirect() {
   if (isAuthenticated) {
     if (groups.includes('SuperAdmin')) {
       return <Navigate to="/admin" replace />;
+    }
+    if (groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g))) {
+      return <Navigate to="/category-admin" replace />;
     }
     return <Navigate to="/student" replace />;
   }
@@ -47,6 +53,12 @@ export default function App() {
           <Route path="/admin" element={
             <ProtectedRoute allowedGroups={['SuperAdmin']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/category-admin" element={
+            <ProtectedRoute allowedGroups={CATEGORY_ADMIN_GROUPS}>
+              <CategoryAdminDashboard />
             </ProtectedRoute>
           } />
 

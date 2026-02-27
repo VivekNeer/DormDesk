@@ -4,6 +4,16 @@ import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
+// Maps Cognito group names → category values
+const GROUP_TO_CATEGORY = {
+  FoodAdmin: 'food',
+  WaterAdmin: 'water',
+  RoomAdmin: 'room',
+  ElectricalAdmin: 'electrical',
+  CleaningAdmin: 'cleaning',
+};
+const CATEGORY_ADMIN_GROUPS = Object.keys(GROUP_TO_CATEGORY);
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [groups, setGroups] = useState([]);
@@ -96,6 +106,9 @@ export function AuthProvider({ children }) {
     setGroups([]);
   }
 
+  const isCategoryAdmin = groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g));
+  const adminCategory = groups.reduce((cat, g) => cat || GROUP_TO_CATEGORY[g] || null, null);
+
   const value = {
     user,
     groups,
@@ -107,6 +120,8 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     isSuperAdmin: groups.includes('SuperAdmin'),
     isStudent: groups.includes('Students'),
+    isCategoryAdmin,
+    adminCategory,
   };
 
   return (

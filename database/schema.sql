@@ -112,19 +112,14 @@ CREATE INDEX idx_complaint_logs_complaint ON complaint_logs(complaint_id);
 -- ║                   SEED DATA                         ║
 -- ╚══════════════════════════════════════════════════════╝
 
--- NOTE: Users are created first in AWS Cognito.
--- After creating the Cognito accounts, note each user's `sub` (UUID)
--- and replace the placeholder below with the actual sub.
-
--- Super Admin (Phase 1 — the only admin account in MVP)
--- Replace 'REPLACE_WITH_COGNITO_SUB_SUPERADMIN' with actual Cognito sub
+-- Super Admin
 INSERT IGNORE INTO users (cognito_sub, name, email, role, admin_category)
 VALUES ('31d3fd9a-00b1-70af-ecd2-4dc7a9ffc8fd', 'Super Admin', 'admin@gmail.com', 'admin', NULL);
 
--- ── Phase 2 seeds (uncomment when doing Phase 2) ──────
--- INSERT IGNORE INTO users (cognito_sub, name, email, role, admin_category) VALUES
---   ('REPLACE_FOOD_SUB',     'Food Admin',       'food@dormdesk.com',        'admin', 'food'),
---   ('REPLACE_WATER_SUB',    'Water Admin',      'water@dormdesk.com',       'admin', 'water'),
---   ('REPLACE_ROOM_SUB',     'Room Admin',       'room@dormdesk.com',        'admin', 'room'),
---   ('REPLACE_ELEC_SUB',     'Electrical Admin', 'electrical@dormdesk.com',  'admin', 'electrical'),
---   ('REPLACE_CLEAN_SUB',    'Cleaning Admin',   'cleaning@dormdesk.com',    'admin', 'cleaning');
+-- Category Admins
+INSERT IGNORE INTO users (cognito_sub, name, email, role, admin_category) VALUES
+  ('51837dca-90e1-70e8-8317-fd92fa125e91', 'Room Admin',       'roomadmin@gmail.com',       'admin', 'room'),
+  ('2163dd1a-80d1-70fd-714a-7ab0fff390cd', 'Food Admin',       'foodadmin@gmail.com',       'admin', 'food'),
+  ('f173edca-b0d1-7016-7042-4dd55fdc3a40', 'Water Admin',      'wateradmin@gmail.com',      'admin', 'water'),
+  ('4173ad9a-80a1-70c8-91cf-596b4d49036e', 'Electrical Admin', 'electricaladmin@gmail.com',  'admin', 'electrical'),
+  ('41c3cdfa-30d1-7025-94ee-78941fd72799', 'Cleaning Admin',   'cleaningadmin@gmail.com',    'admin', 'cleaning');

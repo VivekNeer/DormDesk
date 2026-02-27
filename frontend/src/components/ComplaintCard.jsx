@@ -24,7 +24,7 @@ const CATEGORY_STYLES = {
   other:      'bg-gray-100 text-gray-700',
 };
 
-export default function ComplaintCard({ complaint, showActions, showHistory, onAdvanceStage, onEdit }) {
+export default function ComplaintCard({ complaint, showActions, showHistory, onAdvanceStage, onRevertStage, onEdit }) {
   const [showLogs, setShowLogs]       = useState(false);
   const [logs, setLogs]               = useState([]);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -143,7 +143,7 @@ export default function ComplaintCard({ complaint, showActions, showHistory, onA
       )}
 
       {/* ── Admin action buttons ────────────────────────────────── */}
-      {showActions && complaint.stage < 4 && (
+      {showActions && (
         <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
           {complaint.stage <= 2 && onEdit && (
             <button
@@ -153,7 +153,15 @@ export default function ComplaintCard({ complaint, showActions, showHistory, onA
               Edit Details
             </button>
           )}
-          {onAdvanceStage && (
+          {complaint.stage > 1 && onRevertStage && (
+            <button
+              onClick={() => onRevertStage(complaint)}
+              className="px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors cursor-pointer"
+            >
+              ← Revert to Stage {complaint.stage - 1}
+            </button>
+          )}
+          {complaint.stage < 4 && onAdvanceStage && (
             <button
               onClick={() => onAdvanceStage(complaint)}
               className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer ml-auto"

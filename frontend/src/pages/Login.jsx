@@ -58,8 +58,12 @@ export default function Login() {
 
       if (result.isSignedIn) {
         // Redirect based on Cognito group
+        const CATEGORY_ADMIN_GROUPS = ['FoodAdmin', 'WaterAdmin', 'RoomAdmin', 'ElectricalAdmin', 'CleaningAdmin'];
+
         if (result.groups.includes('SuperAdmin')) {
           navigate('/admin', { replace: true });
+        } else if (result.groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g))) {
+          navigate('/category-admin', { replace: true });
         } else {
           navigate('/student', { replace: true });
         }

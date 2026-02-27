@@ -1,0 +1,21 @@
+name: Deploy DormDesk
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull latest code
+        run: |
+          cd ~/DormDesk
+          git pull origin main
+
+      - name: Run deploy script
+        run: |
+          cd ~/DormDesk
+          ./scripts/deploy.sh

@@ -3,6 +3,9 @@
 # DormDesk Deploy Script
 # Run from: ~/DormDesk on EC2
 # Usage:    ./scripts/deploy.sh
+#
+# NOTE: git pull is handled by the CI/CD workflow before this
+#       script runs. Do NOT add git pull here.
 # ─────────────────────────────────────────────────────────────
 
 set -e  # stop immediately if any command fails
@@ -11,20 +14,14 @@ echo ""
 echo "🚀 DormDesk Deployment Starting..."
 echo "────────────────────────────────────"
 
-# ── 1. Pull latest code ──────────────────────────────────────
-echo "📥 [1/5] Pulling latest code from GitHub..."
-git pull origin main
-echo "✅ Code updated"
-
-# ── 2. Rebuild backend Docker image ─────────────────────────
-echo ""
-echo "🐳 [2/5] Rebuilding backend Docker image..."
+# ── 1. Rebuild backend Docker image ─────────────────────────
+echo "🐳 [1/4] Rebuilding backend Docker image..."
 docker build -t dormdesk-backend:latest ./backend
 echo "✅ Docker image built"
 
-# ── 3. Restart backend container ────────────────────────────
+# ── 2. Restart backend container ────────────────────────────
 echo ""
-echo "🔄 [3/5] Restarting backend container..."
+echo "🔄 [2/4] Restarting backend container..."
 docker stop dormdesk-backend 2>/dev/null || true
 docker rm   dormdesk-backend 2>/dev/null || true
 
@@ -37,18 +34,18 @@ docker run -d \
 
 echo "✅ Backend container running"
 
-# ── 4. Rebuild frontend ──────────────────────────────────────
+# ── 3. Rebuild frontend ──────────────────────────────────────
 echo ""
-echo "⚛️  [4/5] Building React frontend..."
+echo "⚛️  [3/4] Building React frontend..."
 cd frontend
 npm install --silent
 npm run build
 cd ..
 echo "✅ Frontend built"
 
-# ── 5. Deploy frontend to Nginx ──────────────────────────────
+# ── 4. Deploy frontend to Nginx ──────────────────────────────
 echo ""
-echo "📂 [5/5] Deploying frontend to Nginx..."
+echo "📂 [4/4] Deploying frontend to Nginx..."
 sudo cp -r frontend/dist/* /var/www/html/dormdesk/
 echo "✅ Frontend deployed"
 
@@ -56,7 +53,7 @@ echo "✅ Frontend deployed"
 echo ""
 echo "────────────────────────────────────"
 echo "🩺 Running health check..."
-sleep 3  # give container a moment to start
+sleep 3
 
 HEALTH=$(curl -s http://localhost:5000/api/health | grep -o '"status":"ok"' || echo "FAILED")
 

@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
 export default function Register() {
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(decodeURIComponent(searchParams.get('email') || ''));
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [confirmationCode, setConfirmationCode] = useState('');
-  const [step, setStep] = useState('register'); // 'register' | 'confirm'
+  // If redirected from Login with ?confirm=true, jump straight to email confirmation step
+  const [step, setStep] = useState(searchParams.get('confirm') === 'true' ? 'confirm' : 'register');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

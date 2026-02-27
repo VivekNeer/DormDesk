@@ -67,6 +67,12 @@ export default function Login() {
         } else {
           navigate('/student', { replace: true });
         }
+      } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {
+        // User registered but hasn't confirmed their email yet
+        navigate(`/register?confirm=true&email=${encodeURIComponent(email)}`, { replace: true });
+      } else {
+        // Any other nextStep we don't handle (MFA etc.)
+        setError(`Sign-in requires an additional step: ${result.nextStep?.signInStep}. Please contact support.`);
       }
     } catch (err) {
       if (err.name === 'UserAlreadyAuthenticatedException') {

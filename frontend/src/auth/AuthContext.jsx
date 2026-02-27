@@ -108,6 +108,9 @@ export function AuthProvider({ children }) {
 
   const isCategoryAdmin = groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g));
   const adminCategory = groups.reduce((cat, g) => cat || GROUP_TO_CATEGORY[g] || null, null);
+  const isSuperAdmin = groups.includes('SuperAdmin');
+  // isStudent = authenticated and not any kind of admin
+  const isStudent = !isSuperAdmin && !isCategoryAdmin;
 
   const value = {
     user,
@@ -118,8 +121,8 @@ export function AuthProvider({ children }) {
     confirmRegistration,
     logout,
     isAuthenticated: !!user,
-    isSuperAdmin: groups.includes('SuperAdmin'),
-    isStudent: groups.includes('Students'),
+    isSuperAdmin,
+    isStudent,
     isCategoryAdmin,
     adminCategory,
   };

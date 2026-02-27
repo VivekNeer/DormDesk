@@ -21,20 +21,19 @@ export default function ProtectedRoute({ allowedGroups, children }) {
     return <Navigate to="/login" replace />;
   }
 
-  // Check if user belongs to at least one allowed group
-  const hasAccess = allowedGroups.some(group => groups.includes(group));
+  // Anyone authenticated who isn't an admin is treated as a student.
+  // Self-registered users don't get auto-assigned to the 'Students' group
+  // in Cognito, so we can't rely on group membership for the student check.
+  const isAdmin = groups.includes('SuperAdmin') || groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g));
+  const isEffectiveStudent = !isAdmin;
+
+  const hasAccess = allowedGroups.some(group => groups.includes(group)) ||
+    (allowedGroups.includes('Students') && isEffectiveStudent);
 
   if (!hasAccess) {
-    // Redirect to the appropriate dashboard based on their actual group
-    if (groups.includes('SuperAdmin')) {
-      return <Navigate to="/admin" replace />;
-    }
-    if (groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g))) {
-      return <Navigate to="/category-admin" replace />;
-    }
-    if (groups.includes('Students')) {
-      return <Navigate to="/student" replace />;
-    }
+    // Redirect to the appropriate dashboard based on their actual role
+    if (groups.includes('SuperAdmin')) return <Navigate to="/admin" replace />;
+    if (groups.some(g => CATEGORY_ADMIN_GROUPS.includes(g))) return <Navigate to="/category-admin" replace />;
     return <Navigate to="/login" replace />;
   }
 

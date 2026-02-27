@@ -119,7 +119,7 @@ CREATE INDEX idx_complaint_logs_complaint ON complaint_logs(complaint_id);
 -- Super Admin (Phase 1 — the only admin account in MVP)
 -- Replace 'REPLACE_WITH_COGNITO_SUB_SUPERADMIN' with actual Cognito sub
 INSERT IGNORE INTO users (cognito_sub, name, email, role, admin_category)
-VALUES ('31d3fd9a-00b1-70af-ecd2-4dc7a9ffc8fd', 'SuperAdmin', 'admin@gmail.com', 'admin', NULL);
+VALUES ('31d3fd9a-00b1-70af-ecd2-4dc7a9ffc8fd', 'Super Admin', 'admin@gmail.com', 'admin', NULL);
 
 -- ── Phase 2 seeds (uncomment when doing Phase 2) ──────
 -- INSERT IGNORE INTO users (cognito_sub, name, email, role, admin_category) VALUES

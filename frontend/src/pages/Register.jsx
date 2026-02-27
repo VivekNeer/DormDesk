@@ -11,6 +11,7 @@ export default function Register() {
   const [step, setStep] = useState('register'); // 'register' | 'confirm'
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { register, confirmRegistration } = useAuth();
 
@@ -125,7 +126,7 @@ export default function Register() {
                   </label>
                   <input
                     id="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min. 8 characters"
@@ -134,19 +135,31 @@ export default function Register() {
                   />
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-2">
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                     Confirm Password
                   </label>
                   <input
                     id="confirmPassword"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
                     className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     autoComplete="new-password"
                   />
+                </div>
+                <div className="mb-6 flex items-center gap-2">
+                  <input
+                    id="showPassword"
+                    type="checkbox"
+                    checked={showPassword}
+                    onChange={(e) => setShowPassword(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <label htmlFor="showPassword" className="text-xs text-gray-500 cursor-pointer select-none">
+                    Show passwords
+                  </label>
                 </div>
 
                 <button

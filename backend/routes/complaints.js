@@ -143,10 +143,27 @@ router.patch('/:id/stage', auth, requireAdmin, async (req, res) => {
 
 /**
  * GET /api/complaints/:id/logs
- * Admin views the full audit trail for a complaint
+ * - Admin: can view logs for any complaint
+ * - Student: can only view logs for their own complaints (so they see stage history)
  */
-router.get('/:id/logs', auth, requireAdmin, async (req, res) => {
+router.get('/:id/logs', auth, async (req, res) => {
   try {
+    const complaint = await complaintModel.findById(req.params.id);
+    if (!complaint) return res.status(404).json({ error: 'Complaint not found' });
+
+    const isAdmin   = req.user.groups.includes('SuperAdmin');
+    const isStudent = req.user.groups.includes('Students');
+
+    if (isStudent) {
+      // Students can only see logs for their own complaints
+      const dbUser = await userModel.findBySub(req.user.sub);
+      if (!dbUser || complaint.student_id !== dbUser.id) {
+        return res.status(403).json({ error: 'You can only view history for your own complaints' });
+      }
+    } else if (!isAdmin) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
     const logs = await logModel.getLogs(req.params.id);
     res.json({ logs });
   } catch (err) {

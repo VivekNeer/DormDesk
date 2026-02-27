@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { signIn, signUp, signOut, getCurrentUser, fetchAuthSession, confirmSignUp } from './cognito';
-import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
@@ -64,13 +63,6 @@ export function AuthProvider({ children }) {
         name: idToken?.payload?.name || '',
       });
       setGroups(userGroups);
-
-      // Sync user to backend DB
-      try {
-        await api.post('/users/sync');
-      } catch (err) {
-        console.warn('User sync failed (backend may not be ready):', err.message);
-      }
 
       return { isSignedIn: true, groups: userGroups };
     }

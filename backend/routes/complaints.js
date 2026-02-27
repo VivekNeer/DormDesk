@@ -5,7 +5,6 @@ const requireStudent = require('../middleware/requireStudent');
 const requireAdmin = require('../middleware/requireAdmin');
 const complaintModel = require('../models/complaint');
 const logModel = require('../models/complaintLog');
-const userModel = require('../models/user');
 
 // ─────────────────────────────────────────────────────────
 // STUDENT ROUTES
@@ -14,6 +13,7 @@ const userModel = require('../models/user');
 /**
  * POST /api/complaints
  * Student submits a new complaint → Stage 1 (received)
+ * Identity (sub, email, name) comes directly from the verified JWT — no DB user lookup needed.
  */
 router.post('/', auth, requireStudent, async (req, res) => {
   try {
@@ -23,12 +23,17 @@ router.post('/', auth, requireStudent, async (req, res) => {
       return res.status(400).json({ error: 'category, description, and priority are required' });
     }
 
-    const dbUser = await userModel.findBySub(req.user.sub);
-    if (!dbUser) {
-      return res.status(404).json({ error: 'User not found — please log out and back in' });
-    }
+    const { sub, email, name } = req.user;
 
-    const id = await complaintModel.create({ studentId: dbUser.id, category, description, priority });
+    const id = await complaintModel.create({
+      studentSub:   sub,
+      studentEmail: email,
+      studentName:  name || email, // fall back to email if name isn't set in Cognito
+      category,
+      description,
+      priority,
+    });
+
     res.status(201).json({ id, message: 'Complaint submitted successfully' });
   } catch (err) {
     console.error('Submit complaint error:', err);
@@ -38,16 +43,11 @@ router.post('/', auth, requireStudent, async (req, res) => {
 
 /**
  * GET /api/complaints/mine
- * Student views their own complaints
+ * Student views their own complaints — matched by their Cognito sub from the JWT.
  */
 router.get('/mine', auth, requireStudent, async (req, res) => {
   try {
-    const dbUser = await userModel.findBySub(req.user.sub);
-    if (!dbUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const complaints = await complaintModel.findByStudent(dbUser.id);
+    const complaints = await complaintModel.findByStudent(req.user.sub);
     res.json({ complaints });
   } catch (err) {
     console.error('Fetch mine error:', err);
@@ -61,7 +61,7 @@ router.get('/mine', auth, requireStudent, async (req, res) => {
 
 /**
  * GET /api/complaints
- * Admin views complaints — category admins see only their category
+ * Admin views complaints — category admins see only their category.
  */
 router.get('/', auth, requireAdmin, async (req, res) => {
   try {
@@ -81,8 +81,8 @@ router.get('/', auth, requireAdmin, async (req, res) => {
 
 /**
  * PATCH /api/complaints/:id
- * Admin edits complaint details — only allowed in Stage 1 or 2
- * Category admins can only edit their own category's complaints
+ * Admin edits complaint details — only allowed in Stage 1 or 2.
+ * Category admins can only edit their own category's complaints.
  */
 router.patch('/:id', auth, requireAdmin, async (req, res) => {
   try {
@@ -109,8 +109,8 @@ router.patch('/:id', auth, requireAdmin, async (req, res) => {
 
 /**
  * PATCH /api/complaints/:id/stage
- * Admin advances complaint to the next stage (must be sequential: 1→2→3→4)
- * Category admins can only advance their own category's complaints
+ * Admin advances complaint to the next stage (must be sequential: 1→2→3→4).
+ * Identity (sub, name) for the audit log comes from the verified JWT.
  */
 router.patch('/:id/stage', auth, requireAdmin, async (req, res) => {
   try {
@@ -135,14 +135,12 @@ router.patch('/:id/stage', auth, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Stage 4 is the final stage (Resolved)' });
     }
 
-    const adminUser = await userModel.findBySub(req.user.sub);
-    if (!adminUser) return res.status(404).json({ error: 'Admin user not found in DB' });
-
     await complaintModel.updateStage(complaint.id, toStage);
     await logModel.addLog({
-      complaintId: complaint.id,
-      changedBy: adminUser.id,
-      fromStage: complaint.stage,
+      complaintId:    complaint.id,
+      changedBySub:   req.user.sub,
+      changedByName:  req.user.name || req.user.email,
+      fromStage:      complaint.stage,
       toStage,
       note,
     });
@@ -159,7 +157,6 @@ router.patch('/:id/stage', auth, requireAdmin, async (req, res) => {
  * PATCH /api/complaints/:id/revert
  * Admin reverts complaint to the previous stage + deletes the latest audit log entry.
  * Cannot revert below Stage 1.
- * Category admins can only revert their own category's complaints.
  */
 router.patch('/:id/revert', auth, requireAdmin, async (req, res) => {
   try {
@@ -176,11 +173,7 @@ router.patch('/:id/revert', auth, requireAdmin, async (req, res) => {
     }
 
     const previousStage = complaint.stage - 1;
-
-    // Revert the stage
     await complaintModel.updateStage(complaint.id, previousStage);
-
-    // Delete the latest audit log (the forward transition that's being undone)
     await logModel.deleteLatestLog(complaint.id);
 
     const stageLabels = { 1: 'Received', 2: 'Acknowledged', 3: 'In Progress', 4: 'Resolved' };
@@ -196,7 +189,7 @@ router.patch('/:id/revert', auth, requireAdmin, async (req, res) => {
 /**
  * GET /api/complaints/:id/logs
  * Admin or student can view audit logs for a complaint.
- * Students can only see logs for their own complaints.
+ * Students can only see logs for their own complaints (matched via Cognito sub from JWT).
  */
 router.get('/:id/logs', auth, async (req, res) => {
   try {
@@ -204,17 +197,13 @@ router.get('/:id/logs', auth, async (req, res) => {
     if (!complaint) return res.status(404).json({ error: 'Complaint not found' });
 
     const groups = req.user.groups || [];
-    const isAdmin = groups.includes('SuperAdmin') ||
-      requireAdmin.CATEGORY_ADMIN_GROUPS.some(g => groups.includes(g));
-    const isStudent = groups.includes('Students');
+    const ADMIN_GROUPS = ['SuperAdmin', 'FoodAdmin', 'WaterAdmin', 'RoomAdmin', 'ElectricalAdmin', 'CleaningAdmin'];
+    const isAdmin   = groups.some(g => ADMIN_GROUPS.includes(g));
+    const isStudent = !isAdmin;
 
-    if (isStudent) {
-      const dbUser = await userModel.findBySub(req.user.sub);
-      if (!dbUser || complaint.student_id !== dbUser.id) {
-        return res.status(403).json({ error: 'You can only view history for your own complaints' });
-      }
-    } else if (!isAdmin) {
-      return res.status(403).json({ error: 'Unauthorized' });
+    // Students can only view their own complaint's history
+    if (isStudent && complaint.student_sub !== req.user.sub) {
+      return res.status(403).json({ error: 'You can only view history for your own complaints' });
     }
 
     const logs = await logModel.getLogs(req.params.id);

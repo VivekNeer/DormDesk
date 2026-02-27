@@ -1,53 +1,60 @@
 const db = require('../config/db');
 
-async function create({ studentId, category, description, priority }) {
+/**
+ * Creates a new complaint.
+ * student_sub, student_email, student_name come straight from the verified JWT —
+ * no users table lookup needed.
+ */
+async function create({ studentSub, studentEmail, studentName, category, description, priority }) {
   const [result] = await db.query(
-    `INSERT INTO complaints (student_id, category, description, priority, stage)
-     VALUES (?, ?, ?, ?, 1)`,
-    [studentId, category, description, priority]
+    `INSERT INTO complaints (student_sub, student_email, student_name, category, description, priority, stage)
+     VALUES (?, ?, ?, ?, ?, ?, 1)`,
+    [studentSub, studentEmail, studentName, category, description, priority]
   );
   return result.insertId;
 }
 
-async function findByStudent(studentId) {
+/**
+ * Returns all complaints filed by a specific student (matched by Cognito sub).
+ */
+async function findByStudent(studentSub) {
   const [rows] = await db.query(
     `SELECT * FROM complaints
-     WHERE student_id = ?
+     WHERE student_sub = ?
      ORDER BY created_at DESC`,
-    [studentId]
+    [studentSub]
   );
   return rows;
 }
 
+/**
+ * Returns complaints for admin view with optional filters.
+ * adminCategory: null = SuperAdmin sees all; 'food'/'water'/etc = category admin scoped view.
+ */
 async function findAll({ category, priority, stage, adminCategory } = {}) {
-  let query = `
-    SELECT c.*, u.name AS student_name, u.email AS student_email
-    FROM complaints c
-    JOIN users u ON c.student_id = u.id
-    WHERE 1=1
-  `;
+  let query = `SELECT * FROM complaints WHERE 1=1`;
   const params = [];
 
   // Category admin scoping: auto-filter to their category
-  if (adminCategory) { query += ' AND c.category = ?'; params.push(adminCategory); }
+  if (adminCategory)    { query += ' AND category = ?'; params.push(adminCategory); }
   // Manual category filter (SuperAdmin can filter further)
-  else if (category) { query += ' AND c.category = ?'; params.push(category); }
+  else if (category)    { query += ' AND category = ?'; params.push(category); }
 
-  if (priority) { query += ' AND c.priority = ?'; params.push(priority); }
-  if (stage) { query += ' AND c.stage = ?'; params.push(Number(stage)); }
+  if (priority) { query += ' AND priority = ?'; params.push(priority); }
+  if (stage)    { query += ' AND stage = ?';    params.push(Number(stage)); }
 
-  query += ' ORDER BY c.created_at DESC';
+  query += ' ORDER BY created_at DESC';
 
   const [rows] = await db.query(query, params);
   return rows;
 }
 
+/**
+ * Returns a single complaint by ID.
+ */
 async function findById(id) {
   const [rows] = await db.query(
-    `SELECT c.*, u.name AS student_name, u.email AS student_email
-     FROM complaints c
-     JOIN users u ON c.student_id = u.id
-     WHERE c.id = ?`,
+    `SELECT * FROM complaints WHERE id = ?`,
     [id]
   );
   return rows[0] || null;

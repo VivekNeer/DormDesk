@@ -44,7 +44,7 @@ export default function AdminComplaintList() {
       if (stageFilter !== 'all') params.stage = stageFilter;
 
       const res = await api.get('/complaints', { params });
-      setComplaints(res.data);
+      setComplaints(res.data.complaints);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load complaints.');
     } finally {
@@ -104,7 +104,7 @@ export default function AdminComplaintList() {
   async function handleViewLogs(complaint) {
     try {
       const res = await api.get(`/complaints/${complaint.id}/logs`);
-      setLogs(res.data);
+      setLogs(res.data.logs);
       setViewingLogs(complaint);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to load audit log.');

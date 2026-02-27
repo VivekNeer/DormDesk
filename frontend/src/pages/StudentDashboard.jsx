@@ -18,7 +18,7 @@ export default function StudentDashboard() {
     setLoading(true);
     try {
       const res = await api.get('/complaints/mine');
-      setComplaints(res.data);
+      setComplaints(res.data.complaints);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to load your complaints.');
     } finally {

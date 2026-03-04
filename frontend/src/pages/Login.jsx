@@ -172,6 +172,41 @@ export default function Login() {
             </Link>
           </p>
         </div>
+
+        {/* Demo / Testing Credentials Box */}
+        <div className="mt-8 bg-white/60 backdrop-blur-sm rounded-xl p-5 border border-indigo-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+            <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">Test Accounts</span>
+          </h3>
+          <p className="text-xs text-gray-600 mb-4">
+            For testing the Phase 2 role-based access, please use the Category Admins below. 
+            SuperAdmin (admin@gmail.com) can see all complaints, while Category Admins only see complaints related to their domain.
+          </p>
+          <div className="space-y-3">
+            <div className="grid grid-cols-[1fr_140px] gap-2 items-center text-xs">
+              <span className="font-medium text-gray-700 border-b border-gray-100 pb-1">Email</span>
+              <span className="font-medium text-gray-700 border-b border-gray-100 pb-1">Password</span>
+            </div>
+            
+            {[
+              { email: 'admin@gmail.com', role: 'SuperAdmin', pass: 'Admin@123' },
+              { email: 'roomadmin@gmail.com', role: 'Room Admin', pass: 'RoomAdmin@123' },
+              { email: 'foodadmin@gmail.com', role: 'Food Admin', pass: 'FoodAdmin@123' },
+              { email: 'wateradmin@gmail.com', role: 'Water Admin', pass: 'WaterAdmin@123' },
+              { email: 'electricaladmin@gmail.com', role: 'Electrical Admin', pass: 'ElectricalAdmin@123' },
+              { email: 'cleaningadmin@gmail.com', role: 'Cleaning Admin', pass: 'CleaningAdmin@123' },
+            ].map((acc) => (
+              <div key={acc.email} className="grid grid-cols-[1fr_140px] gap-2 items-center text-xs">
+                <div className="flex flex-col overflow-hidden">
+                  <span className="font-mono text-indigo-600 truncate">{acc.email}</span>
+                  <span className="text-[10px] text-gray-400 truncate">{acc.role}</span>
+                </div>
+                <span className="font-mono text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded w-fit max-w-full overflow-hidden text-ellipsis whitespace-nowrap">{acc.pass}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

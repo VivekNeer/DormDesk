@@ -1,4 +1,4 @@
-# DormDesk — HostelOps Complaint Management System
+# DormDesk - HostelOps Complaint Management System
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React">
@@ -54,16 +54,16 @@ DormDesk/
 
 | Document | Description |
 |----------|-------------|
-| [01 — Architecture](docs/01_architecture.md) | Full system architecture |
-| [02 — Construction Plan](docs/02_construction_plan.md) | Every component that needs to be built |
-| [03 — Build Phases](docs/03_build_phases.md) | Phased build guide with team split |
-| [04 — Deployment Runbook](docs/04_deployment_runbook.md) | Step-by-step deployment commands |
-| [05 — Deliverables Checklist](docs/05_deliverables_checklist.md) | Final submission checklist |
-| [06 — Nginx Explanation](docs/06_nginx_explanation.md) | Nginx config line-by-line |
-| [07 — Docker Explanation](docs/07_docker_explanation.md) | Dockerfile + container run explained |
-| [08 — Networking & Security](docs/08_networking_security.md) | Firewall and port strategy |
-| [09 — Request Lifecycle](docs/09_request_lifecycle.md) | End-to-end request walkthrough |
-| [10 — Serverful vs Serverless](docs/10_serverful_vs_serverless.md) | Conceptual comparison |
+| [01 Architecture](docs/01_architecture.md) | Full system architecture |
+| [02 Construction Plan](docs/02_construction_plan.md) | Every component that needs to be built |
+| [03 Build Phases](docs/03_build_phases.md) | Phased build guide with team split |
+| [04 Deployment Runbook](docs/04_deployment_runbook.md) | Step-by-step deployment commands |
+| [05 Deliverables Checklist](docs/05_deliverables_checklist.md) | Final submission checklist |
+| [06 Nginx Explanation](docs/06_nginx_explanation.md) | Nginx config line-by-line |
+| [07 Docker Explanation](docs/07_docker_explanation.md) | Dockerfile + container run explained |
+| [08 Networking & Security](docs/08_networking_security.md) | Firewall and port strategy |
+| [09 Request Lifecycle](docs/09_request_lifecycle.md) | End-to-end request walkthrough |
+| [10 Serverful vs Serverless](docs/10_serverful_vs_serverless.md) | Conceptual comparison |
 
 ---
 

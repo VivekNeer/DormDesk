@@ -10,6 +10,7 @@
 DormDesk is a production-deployed, containerized hostel complaint and maintenance management system. Students can submit and track maintenance complaints; admins can view, filter, and resolve them.
 
 This project demonstrates production-grade DevOps practices:
+
 - Docker containerization
 - Nginx reverse proxy configuration
 - AWS EC2 + RDS deployment
@@ -42,24 +43,25 @@ DormDesk/
 
 ## 📖 Documentation
 
-| Document | Description |
-|----------|-------------|
-| [01 — Architecture](docs/01_architecture.md) | Full system architecture |
-| [02 — Construction Plan](docs/02_construction_plan.md) | Every component that needs to be built |
-| [03 — Build Phases](docs/03_build_phases.md) | Phased build guide with team split |
-| [04 — Deployment Runbook](docs/04_deployment_runbook.md) | Step-by-step deployment commands |
-| [05 — Deliverables Checklist](docs/05_deliverables_checklist.md) | Final submission checklist |
-| [06 — Nginx Explanation](docs/06_nginx_explanation.md) | Nginx config line-by-line |
-| [07 — Docker Explanation](docs/07_docker_explanation.md) | Dockerfile + container run explained |
-| [08 — Networking & Security](docs/08_networking_security.md) | Firewall and port strategy |
-| [09 — Request Lifecycle](docs/09_request_lifecycle.md) | End-to-end request walkthrough |
-| [10 — Serverful vs Serverless](docs/10_serverful_vs_serverless.md) | Conceptual comparison |
+| Document                                                           | Description                            |
+| ------------------------------------------------------------------ | -------------------------------------- |
+| [01 — Architecture](docs/01_architecture.md)                       | Full system architecture               |
+| [02 — Construction Plan](docs/02_construction_plan.md)             | Every component that needs to be built |
+| [03 — Build Phases](docs/03_build_phases.md)                       | Phased build guide with team split     |
+| [04 — Deployment Runbook](docs/04_deployment_runbook.md)           | Step-by-step deployment commands       |
+| [05 — Deliverables Checklist](docs/05_deliverables_checklist.md)   | Final submission checklist             |
+| [06 — Nginx Explanation](docs/06_nginx_explanation.md)             | Nginx config line-by-line              |
+| [07 — Docker Explanation](docs/07_docker_explanation.md)           | Dockerfile + container run explained   |
+| [08 — Networking & Security](docs/08_networking_security.md)       | Firewall and port strategy             |
+| [09 — Request Lifecycle](docs/09_request_lifecycle.md)             | End-to-end request walkthrough         |
+| [10 — Serverful vs Serverless](docs/10_serverful_vs_serverless.md) | Conceptual comparison                  |
 
 ---
 
 ## 🚀 Quick Start (Local Development)
 
 ### Backend
+
 ```bash
 cd backend
 npm install
@@ -68,11 +70,21 @@ node server.js
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
-npm run dev                # Proxies /api to localhost:5000
+npm run dev                # Runs on http://localhost:5174 and proxies /api to localhost:5001
 ```
+
+### Local Demo Mode
+
+If you do not provide Cognito or MySQL env vars, the app starts in local demo mode automatically.
+
+- Backend runs on `http://localhost:5001`
+- Frontend runs on `http://localhost:5174`
+- Demo login includes `admin@gmail.com / Admin@123` and `student@gmail.com / Student@123`
+- You can register a local student account and use it immediately
 
 ---
 
@@ -81,6 +93,7 @@ npm run dev                # Proxies /api to localhost:5000
 Follow [`docs/04_deployment_runbook.md`](docs/04_deployment_runbook.md) for the full deployment guide.
 
 Short summary:
+
 1. Launch EC2 + RDS on AWS
 2. SSH into EC2, clone repo
 3. Apply `database/schema.sql` to RDS
@@ -119,4 +132,4 @@ This project is a 2-person team milestone.
 
 ---
 
-*Milestone Project | DevOps & Full Stack Deployment | 2026*
+_Milestone Project | DevOps & Full Stack Deployment | 2026_

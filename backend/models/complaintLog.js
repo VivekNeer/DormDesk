@@ -1,4 +1,6 @@
-const db = require('../config/db');
+const db = require("../config/db");
+const { isDemoMode } = require("../config/runtime");
+const demoStore = require("../lib/demoStore");
 
 /**
  * Records a stage change in the audit log.
@@ -6,11 +8,37 @@ const db = require('../config/db');
  * The name is snapshotted at write time so the audit trail is preserved
  * even if the admin is later removed from Cognito.
  */
-async function addLog({ complaintId, changedBySub, changedByName, fromStage, toStage, note }) {
+async function addLog({
+  complaintId,
+  changedBySub,
+  changedByName,
+  fromStage,
+  toStage,
+  note,
+}) {
+  if (isDemoMode) {
+    demoStore.addComplaintLog({
+      complaintId,
+      changedBySub,
+      changedByName,
+      fromStage,
+      toStage,
+      note,
+    });
+    return;
+  }
+
   await db.query(
     `INSERT INTO complaint_logs (complaint_id, changed_by_sub, changed_by_name, from_stage, to_stage, note)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    [complaintId, changedBySub, changedByName, fromStage, toStage, note || null]
+    [
+      complaintId,
+      changedBySub,
+      changedByName,
+      fromStage,
+      toStage,
+      note || null,
+    ],
   );
 }
 
@@ -19,11 +47,15 @@ async function addLog({ complaintId, changedBySub, changedByName, fromStage, toS
  * No JOIN to users table needed — changed_by_name is stored inline.
  */
 async function getLogs(complaintId) {
+  if (isDemoMode) {
+    return demoStore.getLogs(complaintId);
+  }
+
   const [rows] = await db.query(
     `SELECT * FROM complaint_logs
      WHERE complaint_id = ?
      ORDER BY changed_at ASC`,
-    [complaintId]
+    [complaintId],
   );
   return rows;
 }
@@ -33,6 +65,11 @@ async function getLogs(complaintId) {
  * Used when reverting a stage — erases the forward transition as if it never happened.
  */
 async function deleteLatestLog(complaintId) {
+  if (isDemoMode) {
+    demoStore.deleteLatestLog(complaintId);
+    return;
+  }
+
   await db.query(
     `DELETE FROM complaint_logs
      WHERE id = (
@@ -43,7 +80,7 @@ async function deleteLatestLog(complaintId) {
          LIMIT 1
        ) AS latest
      )`,
-    [complaintId]
+    [complaintId],
   );
 }
 

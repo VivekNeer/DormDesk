@@ -1,0 +1,10 @@
+{
+  "name": "dormdesk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DormDesk - Hostel Complaint Management System",
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix backend install",
+    "start": "npm --prefix backend start"
+  }
+}

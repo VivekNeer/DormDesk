@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
 const { isDemoMode } = require("./config/runtime");
 
 const complaintsRouter = require("./routes/complaints");
@@ -18,6 +20,18 @@ app.get("/api/health", (req, res) => {
 
 // ── Routes ──────────────────────────────────────────────
 app.use("/api/complaints", complaintsRouter);
+
+// ── Serve Frontend (if built) ───────────────────────────
+const frontendDist = path.join(__dirname, "../frontend/dist");
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+}
 
 // ── 404 fallback ────────────────────────────────────────
 app.use((req, res) => {
